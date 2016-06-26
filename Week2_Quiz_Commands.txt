@@ -1,0 +1,83 @@
+Opdracht 1: GITHUB API connectie leggen
+
+
+library(httr)
+library(httpuv)
+
+# 1. Find OAuth settings for github:
+#    http://developer.github.com/v3/oauth/
+oauth_endpoints("github")
+
+# 2. To make your own application, register at at
+#    https://github.com/settings/applications. Use any URL for the homepage URL
+#    (http://github.com is fine) and  http://localhost:1410 as the callback url
+#
+#    Replace your key and secret below.
+myapp <- oauth_app("github",
+  key = "56b637a5baffac62cad9",
+  secret = "8e107541ae1791259e9987d544ca568633da2ebf")
+
+# 3. Get OAuth credentials
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+
+# 4. Use API
+gtoken <- config(token = github_token)
+req <- GET("https://api.github.com/rate_limit", gtoken)
+stop_for_status(req)
+content(req)
+
+# OR:
+req <- with_config(gtoken, GET("https://api.github.com/rate_limit"))
+stop_for_status(req)
+content(req)
+
+wdewit_coursera_API
+@wdewithubwdewithub owns this application.
+0 users
+Client ID
+00a3b83826f026445305
+Client Secret
+9f577523faaa86cedfd474ae99826823bc2589bd
+
+Als je een 401 foutmelding krijgt: http://stackoverflow.com/questions/30819293/authorization-code-for-github-api-used-in-r/30819786#30819786
+
+Uiteindelijke code:
+library(httr)
+library(httpuv)
+#Verbinding opzetten met Github 
+myapp <- oauth_app("github", key="00a3b83826f026445305", secret="9f577523faaa86cedfd474ae99826823bc2589bd")
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp, use_oob=F, cache=F)
+gtoken <- config(token = github_token)
+#haal de juiste github directory op met jouw opgegeven credentials
+req <- GET("https://api.github.com/users/jtleek/repos", gtoken)
+#deze repository is een JSON file
+library(jsonlite)
+jsonreq <- jsonlite::fromJSON(toJSON(content(req)))   #toJSON: hiermee maken we er een JSON file mee, fromJSON: JSON file naar een dataframe omzetten
+jsonreq[name=="datasharing",46]
+
+
+
+
+Opdracht 2: lengte van de lijnen van een xml document bepalen
+
+url <- "http://biostat.jhsph.edu/~jleek/contact.html"
+contact <- htmltreeparse(file=url,useInternalNodes=T)
+lijnen <- c(10,20,30,100)
+sellijnen <- capture.output(contact) [lijnen]
+nchar(sellijnen)
+
+Probleem: als je htmltreeparse gebruikt dan gaat hij lege lijnen in htmlcode eruit filteren en selecteer je verkeerde lijn. 
+Oplossing: readLines() commando gebruiken --> die leest het document echt in "as is"
+
+Dus:
+con=url("http://biostat.jhsph.edu/~jleek/contact.html")
+docu <- readLines(con)
+lijnen <- c(10,20,30,100)
+nchar(docu[lijnen])
+
+
+Opdracht 3: bepaal som van de elementen in bepaalde kolommen van een fixed width file
+
+download.file(url="https://d396qusza40orc.cloudfront.net/getdata%2Fwksst8110.for", destfile="./fwksst")
+bestand <- read.fwf("./fwksst", skip=4, widths=c(10,9,4,9,4,9,4,9,4))
+sum(bestand[,4])
